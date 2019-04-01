@@ -11,6 +11,10 @@ module.exports = async (req, res) => {
         notification: {
             title,
             body
+        },
+        data: {
+            title, 
+            body
         }
     }
 
