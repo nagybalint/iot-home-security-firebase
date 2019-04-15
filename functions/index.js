@@ -4,6 +4,7 @@ const cors = require('cors')({origin: true});
 const express = require('express');
 
 const register_mobile_user = require('./register_mobile_user');
+const register_device = require('./register_device');
 const send_push_notification = require('./send_push_notification');
 const fetch_device_id = require('./fetch_device_id');
 const add_device = require('./add_device');
@@ -35,6 +36,7 @@ const validateFirebaseIdToken = async (req, res, next) => {
 
 // Unauthenticated endpoints
 exports.register_mobile_user = functions.https.onRequest(register_mobile_user);
+exports.register_device = functions.https.onRequest(register_device);
 
 // Authenticated callable endpoints
 exports.fetch_device_id = functions.https.onCall(fetch_device_id);
