@@ -2,11 +2,13 @@ const admin = require('firebase-admin');
 
 module.exports = async (req, res) => {
     // Check if the request is well formatted
-    if(!req.body.device_id || !req.body.title || !req.body.body) {
+    if(!req.body.title || !req.body.body) {
         return res.status(422).send("Incorrectly formatted request!");
     }
 
-    const { device_id, title, body } = req.body;
+    const { title, body } = req.body;
+    const device_id = req.user.uid;
+
     const payload = {
         notification: {
             title,
@@ -19,15 +21,12 @@ module.exports = async (req, res) => {
     }
 
     console.log(`Incoming request: ${device_id}, ${title}`);
-
-    const db = admin.firestore();
     
     try {
         // Get the FCM tokens corresponding to the device
-        let device = await db.collection('devices').doc(device_id).get();
+        let deviceRecord = await admin.firestore().collection('devices').doc(device_id).get();
         console.log('Device get finished');
-        const skipthis = false;
-        if(skipthis) {
+        if(!deviceRecord.exists) {
             return res.status(422).send({ 
                 error: `Device ${device_id} does not exist`
             });
@@ -35,18 +34,17 @@ module.exports = async (req, res) => {
 
         console.log("Device get successful");
 
-        let users = device.get('users');
-
-        console.log(`UserIds: ${users}`);
-        console.log(typeof users);
+        let users = deviceRecord.get('users');
 
         let tokens = new Array();
 
         for (const user of users) {
-            // eslint-disable-next-line no-await-in-loop
-            let userRecord = await db.collection('users').doc(user).get();
-            tokens.push(userRecord.get('fcm_token'));
+            tokens.push(user);
         }
+
+        console.log(`Tokens: ${tokens}`);
+        console.log(`Tokens type ${typeof tokens}`);
+        console.log(`Token type ${typeof tokens[0]}`);
 
         // Send the notification to the individual apps registered for the device
         let responses = await admin.messaging().sendToDevice(tokens, payload);
