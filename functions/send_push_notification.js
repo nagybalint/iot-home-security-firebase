@@ -1,13 +1,54 @@
 const admin = require('firebase-admin');
 
-module.exports = async (req, res) => {
-    // Check if the request is well formatted
-    if(!req.body.title || !req.body.body) {
-        return res.status(422).send("Incorrectly formatted request!");
+module.exports = async (message) => {
+
+    console.log(message);
+
+    const { data, attributes } = message;
+    if (!data || !attributes) {
+        console.log('Incorrect request');
+        return;
     }
 
-    const { title, body } = req.body;
-    const device_id = req.user.uid;
+    const { deviceId } = attributes;
+
+    if (!deviceId) {
+        console.log('Device id not specified');
+        return;
+    }
+
+    const decodedData = Buffer.from(data, 'base64').toString();
+    console.log(decodedData);
+    try {
+        console.log(`Keys of str ${Object.keys(decodedData)}`);
+    } catch (e) {
+        console.log(e);
+    }
+
+    jsonData = JSON.parse(decodedData);
+
+    console.log(jsonData);
+
+    try {
+        let result = await sendPushNotifications(deviceId, jsonData);
+    } catch (error) {
+        console.log('Error in sending push notifications');
+        console.log(error);
+    }
+
+}
+
+sendPushNotifications = async (device_id, message) => {
+
+    const { title, body } = message;
+
+    if (!title || !body) {
+        console.log('Incorrect request body');
+        return {
+            success: false,
+            error: 'Incorrect message body'
+        };
+    }
 
     const payload = {
         notification: {
@@ -25,14 +66,15 @@ module.exports = async (req, res) => {
     try {
         // Get the FCM tokens corresponding to the device
         let deviceRecord = await admin.firestore().collection('devices').doc(device_id).get();
-        console.log('Device get finished');
         if(!deviceRecord.exists) {
-            return res.status(422).send({ 
+            console.log(`The device with id ${device_id} does not exist in firestore`);
+            return {
+                success: false, 
                 error: `Device ${device_id} does not exist`
-            });
+            };
         }
 
-        console.log("Device get successful");
+        console.log("Device found in firestore");
 
         let users = deviceRecord.get('users');
 
@@ -50,11 +92,16 @@ module.exports = async (req, res) => {
         let responses = await admin.messaging().sendToDevice(tokens, payload);
         console.log('Responses');
         console.log(responses);
-        return res.status(200).send("Notifications sent successfully");
+        return {
+            success: true,
+            error: null
+        };
 
     } catch(error) {
         console.log(error);
-        return res.status(500).send({ error: error });
+        return {
+            success: false,
+            error: 'Internal error'
+        };
     }
-
 }
