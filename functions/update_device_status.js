@@ -46,9 +46,12 @@ updateStatus = async (device_id, status) => {
         console.log('Saving image to storage');
         // Save image to firebase storage
         const bucket = admin.storage().bucket();
-        const file = bucket.file(`${device_id}.jpg`);
+
+        const filename = `${device_id}.jpg`;
+
+        const file = bucket.file(filename);
         await file.save(jpegImg);
-        newState.camera_image = true;
+        newState.camera_image = filename;
     }
 
     if(!motion_sensor_status) {

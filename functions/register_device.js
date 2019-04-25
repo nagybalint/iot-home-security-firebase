@@ -6,33 +6,16 @@ module.exports = async (req, res) => {
         device_id, 
         password,
         verification_code,
-        registry,
-        public_key,
-        type
+        registry
     } = req.body;
 
-    if (!device_id || !password || !verification_code) {
+    if (!device_id || !password || !verification_code || !registry) {
         return res.status(422).send('Incomplete request body');
     }
 
-    // Register device to auth
-    let userRecord;
-
-    try {
-        userRecord = await admin.auth().createUser({
-            disabled: false,
-            displayName: device_id,
-            email: `${device_id}@dummydomain.com`,
-            emailVerified: false,
-            password: password,
-            uid: device_id
-        });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send(error);
-    }
-
     const data = {
+        state: {},
+        registry: registry,
         verification_code: verification_code
     }
 
@@ -48,8 +31,6 @@ module.exports = async (req, res) => {
         res.status(422).send(error)
     }
 
-    return res.status(200).send('Device added succesfully');
-
-    // Add device to Cloud IoT registry
+    return res.status(200).send('Device added to firestore succesfully');
 
 }
