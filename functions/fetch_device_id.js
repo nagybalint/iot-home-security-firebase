@@ -16,21 +16,29 @@ module.exports = async (data, context) => {
     console.log(`Authenticated call with id ${uid}`);
 
     try {
+        // Read the device id registered to the user in firestore
         let userRef = await admin.firestore().collection('users').doc(uid);
         return userRef.get().then((doc) => {
             return {
                 device_id: doc.get('device_id')
             };
         }).catch((error) => {
-            return {
-                error: "User not found"
-            };
+            throw new functions.https.HttpsError(
+                'not-found',
+                'User not found'
+            );
         });
 
     } catch (error) {
-        throw new functions.https.HttpsError(
-            'internal',
-            'Something bad has happened :( Please try again!'
-        );
+        console.log(error);
+
+        if (error instanceof functions.https.HttpsError && error.code === 'not-found') {
+            throw error;
+        } else {
+            throw new functions.https.HttpsError(
+                'internal',
+                'Fetching device id not successful! Please try again!'
+            );
+        }
     }
 }

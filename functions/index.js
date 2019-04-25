@@ -51,9 +51,27 @@ exports.register_device = functions.https.onRequest(register_device);
 
 /**
  * Endpoint for fetching the device id registered for a user
+ * Authenticated callable endpoint
  * @name Fetch device id
+ * @function fetch_device_id
+ * @async
+ * @return {firebase.functions.HttpsCallableResult} result The device id can be extacted from the .data.device_id property of the response
+ * @throws {firebase.https.HttpsError} error Possible error codes: not-found, internal
+ * @example
+ * // Example for calling the endpoint from a react native app
+ * // A USER MUST BE LOGGED IN BEFORE CALLING THE ENDPOINT
+ * import firebase from 'react-native-firebase';
+ * let fetchDeviceId = firebase.functions().httpsCallable('fetch_device_id');
+ * try {
+ *     let result = await fetchDeviceId.call({ });
+ *     const { device_id } = result.data;
+ * } catch (error) {
+ *     const { code, message } = error;
+ *     console.log(code, message);
+ * }
  */
 exports.fetch_device_id = functions.https.onCall(fetch_device_id);
+
 /**
  * Endoint for registering an IoT device for a mobile user
  * @name Add device
