@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+const functions = require('firebase-functions');
 
 module.exports = async (message) => {
     console.log('Endpoint called');
@@ -7,25 +8,34 @@ module.exports = async (message) => {
 
     if (!data || !attributes) {
         console.log('Incorrect request - missing attributes');
-        return;
+        throw new functions.https.HttpsError(
+            'invalid-argument',
+            'Request body incorrect or incomplete'
+        );
     }
 
     const { deviceId } = attributes;
 
-    if(!deviceId) {
-        console.log('Incorrect request - Device Id not provided');
-        return;
+    if (!deviceId) {
+        console.log('Incorrect request - device Id not provided');
+        throw new functions.https.HttpsError(
+            'invalid-argument',
+            'Request body does not contain a device id'
+        );
     }
 
-    console.log('Correct request format');
+    console.log('Correct request body');
 
+    console.log('Decoding message data');
     decodedData = Buffer.from(data, 'base64').toString();
     status = JSON.parse(decodedData);
 
     try {
+        // Update device status in firestore and storage
         await updateStatus(deviceId, status);
     } catch (error) {
         console.log(error);
+        throw error;
     }
 }
 
@@ -61,7 +71,6 @@ updateStatus = async (device_id, status) => {
     }
 
     console.log('Updating device state in firestore');
-    console.log(`State keys ${Object.keys(newState)}`);
     // Update firestore data for the device
     let deviceRef = await admin.firestore().collection('devices').doc(device_id);
     await deviceRef.update({

@@ -128,10 +128,27 @@ exports.send_command = functions.https.onCall(send_command);
 //
 
 /**
- * Endpoint for saving the status sent by the IoT device to firebase
+ * Endpoint for saving the status sent by the IoT device to firestore and storage.
+ * Called from firebase automatically when a new message is published on the state topic.
  * @name Update device status
+ * @function
+ * @listens publish message on pubsub topic state 
+ * @param {object} message
+ * @param {string} message.data b64 encoded message the IoT device published. After decoding, the data attributes represent the object holding the message content
+ * @param {object} message.data.status Device status published by the IoT device
+ * @param {string} [message.data.status.camera_image] b64 encoded jpeg image
+ * @param {boolean} [message.data.status.motion_sensor_status] true if motion is detected, false otherwise
+ * @param {object} message.attributes Attributes of the request. Not encoded.
+ * @param {string} message.attributes.deviceId
+ * @param {string} message.attributes.deviceNumId
+ * @param {string} message.attributes.deviceRegistryId
+ * @param {string} message.attributes.deviceRegistryLocation
+ * @param {string} message.attributes.projectId
+ * @param {string} message.attributes.subFolder
+ * @param {string} message._json
  */
 exports.on_device_state_update = functions.pubsub.topic('state').onPublish(update_device_status);
+
 /**
  * Endpoint for forwarding the alert sent by the IoT device as push notifications 
  * to the users who have this device registered
