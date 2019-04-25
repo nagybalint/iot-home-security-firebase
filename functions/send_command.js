@@ -23,7 +23,7 @@ module.exports = async (data, context) => {
 
     console.log(`Authenticated call with id ${uid}`);
 
-    let result = sendStatusUpdateCommand(uid);
+    let result = await sendStatusUpdateCommand(uid);
     const { success } = result;
     if(success) {
         return {

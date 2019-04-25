@@ -52,7 +52,7 @@ exports.register_device = functions.https.onRequest(register_device);
 /**
  * Endpoint for fetching the device id registered for a user.
  * Authenticated callable endpoint.
- * @name Fetch device id
+ * @name fetch_device_id
  * @function fetch_device_id
  * @async
  * @return {firebase.functions.HttpsCallableResult} result The device id can be extacted from the .data.device_id property of the response
@@ -75,7 +75,7 @@ exports.fetch_device_id = functions.https.onCall(fetch_device_id);
 /**
  * Endpoint for registering an IoT device for a mobile user.
  * Authenticated callable endpoint.
- * @name Add device
+ * @name add_device
  * @function add_device
  * @async
  * @param {Object} data 
@@ -103,7 +103,7 @@ exports.add_device = functions.https.onCall(add_device);
 /**
  * Endpoint for sending a status update request for the IoT device registered for the user.
  * Authenticated callable endpoint.
- * @name Send command
+ * @name send_command
  * @function send_command
  * @async
  * @return {firebase.functions.HttpsCallableResult} result The result.data object contains the .success <bool> property, which is always true
@@ -130,8 +130,8 @@ exports.send_command = functions.https.onCall(send_command);
 /**
  * Endpoint for saving the status sent by the IoT device to firestore and storage.
  * Called from firebase automatically when a new message is published on the state topic.
- * @name Update device status
- * @function
+ * @name update_device_status
+ * @function update_device_status
  * @listens publish message on pubsub topic state 
  * @param {object} message
  * @param {string} message.data b64 encoded message the IoT device published. After decoding, the data attributes represent the object holding the message content
@@ -150,8 +150,22 @@ exports.send_command = functions.https.onCall(send_command);
 exports.on_device_state_update = functions.pubsub.topic('state').onPublish(update_device_status);
 
 /**
- * Endpoint for forwarding the alert sent by the IoT device as push notifications 
- * to the users who have this device registered
- * @name Send push notifications
+ * Endpoint for sending push notifications. The notifications are sent to the users who have the IoT device publishing the message registered for them.
+ * Called from firebase automatically when a new message is published on the alerts topic.
+ * @name send_push_notification
+ * @function send_push_notification
+ * @listens publish message on pubsub topic alerts 
+ * @param {object} message
+ * @param {string} message.data b64 encoded message the IoT device published. After decoding, the data attributes represent the object holding the message content
+ * @param {string} message.data.title The title of the notification
+ * @param {string} message.data.body The body of the notification
+ * @param {object} message.attributes Attributes of the request. Not encoded.
+ * @param {string} message.attributes.deviceId
+ * @param {string} message.attributes.deviceNumId
+ * @param {string} message.attributes.deviceRegistryId
+ * @param {string} message.attributes.deviceRegistryLocation
+ * @param {string} message.attributes.projectId
+ * @param {string} message.attributes.subFolder
+ * @param {string} message._json
  */
 exports.on_device_alert = functions.pubsub.topic('alerts').onPublish(send_push_notification);

@@ -8,6 +8,7 @@ module.exports = async (message) => {
 
     if (!data || !attributes) {
         console.log('Incorrect request - missing attributes');
+        console.log(message);
         throw new functions.https.HttpsError(
             'invalid-argument',
             'Request body incorrect or incomplete'
@@ -18,6 +19,7 @@ module.exports = async (message) => {
 
     if (!deviceId) {
         console.log('Incorrect request - device Id not provided');
+        console.log(message);
         throw new functions.https.HttpsError(
             'invalid-argument',
             'Request body does not contain a device id'
