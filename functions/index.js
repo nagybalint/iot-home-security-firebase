@@ -130,8 +130,8 @@ exports.send_command = functions.https.onCall(send_command);
 /**
  * Endpoint for saving the status sent by the IoT device to firestore and storage.
  * Called from firebase automatically when a new message is published on the state topic.
- * @name update_device_status
- * @function update_device_status
+ * @name on_device_state_update
+ * @function on_device_state_update
  * @listens publish message on pubsub topic state 
  * @param {object} message
  * @param {string} message.data b64 encoded message the IoT device published. After decoding, the data attributes represent the object holding the message content
@@ -146,14 +146,15 @@ exports.send_command = functions.https.onCall(send_command);
  * @param {string} message.attributes.projectId
  * @param {string} message.attributes.subFolder
  * @param {string} message._json
+ * @throws {firebase.https.HttpsError} error Possible error codes: invalid-argument
  */
 exports.on_device_state_update = functions.pubsub.topic('state').onPublish(update_device_status);
 
 /**
  * Endpoint for sending push notifications. The notifications are sent to the users who have the IoT device publishing the message registered for them.
  * Called from firebase automatically when a new message is published on the alerts topic.
- * @name send_push_notification
- * @function send_push_notification
+ * @name on_device_alert
+ * @function on_device_alert
  * @listens publish message on pubsub topic alerts 
  * @param {object} message
  * @param {string} message.data b64 encoded message the IoT device published. After decoding, the data attributes represent the object holding the message content
@@ -167,5 +168,6 @@ exports.on_device_state_update = functions.pubsub.topic('state').onPublish(updat
  * @param {string} message.attributes.projectId
  * @param {string} message.attributes.subFolder
  * @param {string} message._json
+ * @throws {firebase.https.HttpsError} error Possible error codes: invalid-argument, not-found
  */
 exports.on_device_alert = functions.pubsub.topic('alerts').onPublish(send_push_notification);
