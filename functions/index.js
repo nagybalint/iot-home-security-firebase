@@ -17,7 +17,7 @@ admin.initializeApp(functions.config().firebase);
 
 /**
  * Endpoint for registering a new mobile user in firebase auth and firestore
- * @name Register mobile user
+ * @name register_mobile_user
  * @route {POST} /register_mobile_user
  * @bodyparam {String} email Must be a valid email address
  * @bodyparam {String} password Must be at least 6 characters long
@@ -32,7 +32,7 @@ exports.register_mobile_user = functions.https.onRequest(register_mobile_user);
 
 /**
  * Endpoint for registering a new IoT device in firestore
- * @name Register IoT device
+ * @name register_device
  * @route {POST} /register_device
  * @bodyparam {String} device_id The id of the IoT device in Google Cloud IoT Core and firestore
  * @bodyparam {String} verification_code Verification code which the mobile user has to enter when adding the device
@@ -50,8 +50,8 @@ exports.register_device = functions.https.onRequest(register_device);
 // 
 
 /**
- * Endpoint for fetching the device id registered for a user
- * Authenticated callable endpoint
+ * Endpoint for fetching the device id registered for a user.
+ * Authenticated callable endpoint.
  * @name Fetch device id
  * @function fetch_device_id
  * @async
@@ -73,8 +73,8 @@ exports.register_device = functions.https.onRequest(register_device);
 exports.fetch_device_id = functions.https.onCall(fetch_device_id);
 
 /**
- * Endpoint for registering an IoT device for a mobile user
- * Authenticated callable endpoint
+ * Endpoint for registering an IoT device for a mobile user.
+ * Authenticated callable endpoint.
  * @name Add device
  * @function add_device
  * @async
@@ -88,7 +88,7 @@ exports.fetch_device_id = functions.https.onCall(fetch_device_id);
  * // A USER MUST BE LOGGED IN BEFORE CALLING THE ENDPOINT
  * import firebase from 'react-native-firebase';
  * const device_id = "test_id";
- * const verification_code = "123456".
+ * const verification_code = "123456";
  * let addDevice = firebase.functions().httpsCallable('add_device');
  * try {
  *     let result = await addDevice.call({ device_id, verification_code });
@@ -101,8 +101,25 @@ exports.fetch_device_id = functions.https.onCall(fetch_device_id);
 exports.add_device = functions.https.onCall(add_device);
 
 /**
- * Endpoint for sending a command to the IoT device registered for a user
+ * Endpoint for sending a status update request for the IoT device registered for the user.
+ * Authenticated callable endpoint.
  * @name Send command
+ * @function send_command
+ * @async
+ * @return {firebase.functions.HttpsCallableResult} result The result.data object contains the .success <bool> property, which is always true
+ * @throws {firebase.https.HttpsError} error Possible error codes: unauthenticated, internal, not-found
+ * @example
+ * // Example for calling the endpoint from a react native app
+ * // A USER MUST BE LOGGED IN BEFORE CALLING THE ENDPOINT
+ * import firebase from 'react-native-firebase';
+ * let sendCommand = firebase.functions().httpsCallable('send_command');
+ * try {
+ *     let result = await sendCommand.call({ });
+ *     const { success } = result.data;
+ * } catch (error) {
+ *     const { code, message } = error;
+ *     console.log(code, message);
+ * }
  */
 exports.send_command = functions.https.onCall(send_command);
 
