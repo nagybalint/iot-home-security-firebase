@@ -1,58 +1,6 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 
-verify_device = async (device_id, verification_code) => {
-    console.log(`Verify device started with ${device_id}, ${verification_code}`);
-    let deviceRecord = await admin.firestore().collection('devices').doc(device_id).get();
-    if (!deviceRecord.exists) {
-        console.log('Device not found');
-        return {
-            verified: false,
-            error: `Device Id ${device_id} does not exist!`
-        };
-    }
-
-    if(deviceRecord.get('verification_code') !== verification_code) {
-        console.log('Code incorrect');
-        return {
-            verified: false,
-            error: 'Incorrect Verification Code!'
-        };
-    }
-
-    console.log('Device verification successful');
-
-    return {
-        verified: true,
-        error: null
-    };
-}
-
-registerDevice = async (uid, device_id) => {
-    console.log(`Registering device started with ${uid}, ${device_id}`);
-    let userRef = await admin.firestore().collection('users').doc(uid);
-    await userRef.update({
-        device_id: device_id
-    });
-    console.log('user.device_id set');
-    
-    let userRecord = await userRef.get();
-    const fcm_token = userRecord.get('fcm_token');
-    console.log(`fcm token read ${fcm_token}`);
-    if (fcm_token) {
-        let deviceRef = await admin.firestore().collection('devices').doc(device_id);
-        deviceRef.update({
-            users: admin.firestore.FieldValue.arrayUnion(fcm_token)
-        });
-        console.log('Device\'s user array updated');
-    }
-
-    console.log('Successful registration');
-    return {
-        success: true
-    };
-}
-
 module.exports = async (data, context) => {
     // Only authenticated users can user this endpoint
     if(!context.auth) {
@@ -69,7 +17,7 @@ module.exports = async (data, context) => {
 
     if (!data.device_id || !data.verification_code) {
         throw new functions.https.HttpsError(
-            'internal', // TODO get a better error code
+            'invalid-argument',
             'A device id and verification code must be sent with the request!'
         );
     }
@@ -79,28 +27,22 @@ module.exports = async (data, context) => {
     console.log(`Correct request with ${device_id}, ${verification_code}`);
 
     try {
-        let { verified, error } = await verify_device(device_id, verification_code);
-        if(!verified) {
-            console.log('Verification failed - outside');
-            throw new functions.https.HttpsError(
-                'internal',
-                error
-            );
-        }
-
-        console.log('Verification successful, registering device - outside');
+        // Check if the verification code is correct
+        await verify_device(device_id, verification_code);
+        // Register device for the user in firestore
         await registerDevice(uid, device_id);
 
-        console.log('Registration successful, returning with success - outside');
+        console.log('Registration successful');
+
         return {
             success: true
         };
 
-    } catch (err) {
-        console.log(`error ${err}`);
+    } catch (error) {
+        console.log(`Error ${error}`);
 
-        if (err instanceof functions.https.HttpsError) {
-            throw err;
+        if (error instanceof functions.https.HttpsError) {
+            throw error;
         } else {
             throw new functions.https.HttpsError(
                 'internal',
@@ -108,4 +50,66 @@ module.exports = async (data, context) => {
             );
         }
     }
+}
+
+verify_device = async (device_id, verification_code) => {
+    console.log(`Verifying registration code ${verification_code} for device ${device_id}`);
+
+    let deviceRecord = await admin.firestore().collection('devices').doc(device_id).get();
+    if (!deviceRecord.exists) {
+        console.log('Device not found');
+        throw new functions.https.HttpsError(
+            'not-found',
+            `Device Id ${device_id} not found!`
+        );
+    }
+
+    if(deviceRecord.get('verification_code') !== verification_code) {
+        console.log('Incorrect verification code');
+        throw new functions.https.HttpsError(
+            'unauthenticated',
+            'Incorrect Verification Code!'
+        );
+    }
+
+    console.log('Device verification successful');
+
+    return;
+}
+
+registerDevice = async (uid, device_id) => {
+    console.log(`Registering device ${device_id} for user ${uid}`);
+
+    let userRef = await admin.firestore().collection('users').doc(uid);
+    let userRecord = await userRef.get();
+
+    if(!userRecord.exists) {
+        console.log('User record not found in firestore');
+        throw new functions.https.HttpsError(
+            'not-found',
+            'User not found!'
+        );
+    }
+
+    // Adding the user's fcm token to the device record, if the fcm token is known for the user
+    const fcm_token = userRecord.get('fcm_token');
+        
+    if (fcm_token) {
+        let deviceRef = await admin.firestore().collection('devices').doc(device_id);
+        deviceRef.update({
+            users: admin.firestore.FieldValue.arrayUnion(fcm_token)
+        });
+        console.log('Device\'s user array updated');
+    }
+
+    // Adding the device_id to the user record
+    await userRef.update({
+        device_id: device_id
+    });
+
+    console.log('Device id added to the user record');
+
+    console.log('Successful device registration');
+
+    return;
 }

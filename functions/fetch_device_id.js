@@ -32,7 +32,7 @@ module.exports = async (data, context) => {
     } catch (error) {
         console.log(error);
 
-        if (error instanceof functions.https.HttpsError && error.code === 'not-found') {
+        if (error instanceof functions.https.HttpsError) {
             throw error;
         } else {
             throw new functions.https.HttpsError(
