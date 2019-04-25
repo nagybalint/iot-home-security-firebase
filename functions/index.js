@@ -22,9 +22,9 @@ admin.initializeApp(functions.config().firebase);
  * @bodyparam {String} email Must be a valid email address
  * @bodyparam {String} password Must be at least 6 characters long
  * @code {201} If the request is successful
- * @code {422} If the Request body is incorrect or incomplete
+ * @code {422} If the request body is incorrect or incomplete
  * @code {409} If the email address is already in use
- * @code {403} If the Password is not valid
+ * @code {403} If the password is not valid
  * @code {500} On internal errors
  * @response {String} status Status message
  */
@@ -34,7 +34,14 @@ exports.register_mobile_user = functions.https.onRequest(register_mobile_user);
  * Endpoint for registering a new IoT device in firestore
  * @name Register IoT device
  * @route {POST} /register_device
- * @bodyparam {String} device_id Haha
+ * @bodyparam {String} device_id The id of the IoT device in Google Cloud IoT Core and firestore
+ * @bodyparam {String} verification_code Verification code which the mobile user has to enter when adding the device
+ * @bodyparam {String} registry The Google Cloud IoT Core registry the device is registered in
+ * @code {201} If the request is successful
+ * @code {409} If the device already exists in firestore
+ * @code {422} If the request body is incorrect or incomplete
+ * @code {500} On internal errors
+ * @response {String} status Status message
  */
 exports.register_device = functions.https.onRequest(register_device);
 
