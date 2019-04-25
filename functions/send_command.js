@@ -179,7 +179,16 @@ sendCommand = (client, registry, deviceId, commandMessage) => {
                 if (err) {
                     console.log('Could not send command');
                     console.log(err);
-                    reject(err);
+                    const errorString = err.toString();
+                    const notConnectedPattern = /^Error: Device `\d*` is not connected.$/;
+                    if(notConnectedPattern.test(errorString)) {
+                        reject(new functions.https.HttpsError(
+                            'unavailable',
+                            'Device not connected'
+                        ));
+                    } else {
+                        reject(err);
+                    }
                 } else {
                     console.log('Command sent successfully');
                     resolve(data);

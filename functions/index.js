@@ -107,7 +107,7 @@ exports.add_device = functions.https.onCall(add_device);
  * @function send_command
  * @async
  * @return {firebase.functions.HttpsCallableResult} result The result.data object contains the .success <bool> property, which is always true
- * @throws {firebase.https.HttpsError} error Possible error codes: unauthenticated, internal, not-found
+ * @throws {firebase.https.HttpsError} error Possible error codes: unavailable, unauthenticated, internal, not-found
  * @example
  * // Example for calling the endpoint from a react native app
  * // A USER MUST BE LOGGED IN BEFORE CALLING THE ENDPOINT
