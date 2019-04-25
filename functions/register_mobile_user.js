@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 module.exports = async (req, res) => {
     if (!req.body.email || !req.body.password) {
         return res.status(422).send({ 
-            error: "User Email and Password must be provided" 
+            error: "User Email and Password must be provided!" 
         });
     }
 
@@ -13,6 +13,7 @@ module.exports = async (req, res) => {
     console.log(`Request submitted with ${email}`)
 
     try {
+        // Create user in firebase auth
         let userRecord = await admin.auth().createUser({
             email: email,
             password: password
@@ -23,6 +24,7 @@ module.exports = async (req, res) => {
         const data = !req.body.fcm_token ? { } : 
             { fcm_token: String(req.body.fcm_token) };
 
+        // Add user data to firestore
         let ref = await admin.firestore().collection('users').doc(uid).set(data);
         return res.status(201).send('Mobile user registered successfully');
         

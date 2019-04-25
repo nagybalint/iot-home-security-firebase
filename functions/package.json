@@ -14,7 +14,10 @@
     "express": "^4.16.4",
     "firebase-admin": "~6.0.0",
     "firebase-functions": "^2.1.0",
-    "googleapis": "^39.2.0"
+    "googleapis": "^39.2.0",
+    "jsdoc": "^3.5.5",
+    "jsdoc-http-plugin": "^0.3.0",
+    "jsdoc-route-plugin": "^0.1.0"
   },
   "engines": {
     "node": "8"

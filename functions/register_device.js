@@ -13,6 +13,9 @@ module.exports = async (req, res) => {
         return res.status(422).send('Incomplete request body');
     }
 
+    console.log(`Request submitted for ${device_id}`);
+
+    // Assemble initial device data in firestore
     const data = {
         state: {},
         registry: registry,
@@ -28,7 +31,7 @@ module.exports = async (req, res) => {
         }
         await deviceRef.set(data);
     } catch (error) {
-        res.status(422).send(error)
+        return res.status(500).send('Device registration failed! Please try again!');
     }
 
     return res.status(200).send('Device added to firestore succesfully');
