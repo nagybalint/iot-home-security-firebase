@@ -66,7 +66,7 @@ updateStatus = async (device_id, status) => {
         newState.camera_image = filename;
     }
 
-    if(!motion_sensor_status) {
+    if(typeof motion_sensor_status === 'undefined') {
         console.log('Motion status not sent');
     } else {
         newState.motion_status  = motion_sensor_status ? true : false;
