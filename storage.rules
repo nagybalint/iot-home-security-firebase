@@ -1,8 +1,10 @@
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      //allow read, write: if request.auth != null;
-      allow read, write: if true;
+    match /{imageName} {
+			// Can be written only be the firebase admin sdk
+      allow write: if false;
+    	// Can only be read by authenticated users who have the device registered
+    	allow read: if imageName.matches(request.auth.token.device + '.jpg');
     }
   }
 }

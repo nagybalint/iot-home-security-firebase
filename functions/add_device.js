@@ -107,6 +107,10 @@ registerDevice = async (uid, device_id) => {
         device_id: device_id
     });
 
+    console.log('Setting custom claim for the user');
+    // Set the user's custom claim for the device
+    await admin.auth().setCustomUserClaims(uid, { device: device_id });
+
     console.log('Device id added to the user record');
 
     console.log('Successful device registration');
